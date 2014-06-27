@@ -41,6 +41,15 @@ object ImageToPosition {
     vec.foldLeft("")(_+","+_)
   }
 
+  def resize (file: File, size: Int = 200)(implicit ec: ExecutionContext, scripts: ScriptsPath): Future[File] = {
+    Future {
+      val resized = randomFile()
+      ((Seq(scripts("resize.sh"), size.toString) #< file) #> resized).run().exitValue()
+      resized
+    }
+  }
+    
+
   def colors (file: File)(implicit ec: ExecutionContext, scripts: ScriptsPath): Future[List[(Vec2, Int)]] = {
     Future {
       val cmd = scripts("colors.sh") #< file
@@ -114,10 +123,8 @@ object ImageToPosition {
   // false = black piece
   // e.g. Map("a1" -> true, "a2" -> true, "g4" -> false, "g7" -> false)
   def apply(file: File)(implicit ec: ExecutionContext, scripts: ScriptsPath): Future[Map[String, Boolean]] = {
-    val resized = randomFile()
-    (scripts("resize.sh") #< file) #> resized !
-    
     for {
+      resized <- resize(file)
       positions <- colors(resized)
       corners <- Future(kmeans(positions))
       (gridFile, size) <- perspective(resized, corners)

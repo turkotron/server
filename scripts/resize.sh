@@ -1,2 +1,2 @@
 
-convert - -resize 200x200^ -
+convert - -resize $1x$1^ -
