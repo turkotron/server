@@ -123,15 +123,18 @@ object ImageToPosition {
   // false = black piece
   // e.g. Map("a1" -> true, "a2" -> true, "g4" -> false, "g7" -> false)
   def apply(file: File)(implicit ec: ExecutionContext, scripts: ScriptsPath): Future[Map[String, Boolean]] = {
-    for {
+    val result = for {
       resized <- resize(file)
       positions <- colors(resized)
       corners <- Future(kmeans(positions))
+      _ = println(s"Corners: $corners")
       (gridFile, size) <- perspective(resized, corners)
       results <- allPawns(gridFile, size)
     }
     yield results.flatMap { case (pos, valueOpt) =>
       valueOpt.map { value => (pos, value) }
     }.toMap
+    result.map { result => println(s"Positions: $result") }
+    result
   }
 }
