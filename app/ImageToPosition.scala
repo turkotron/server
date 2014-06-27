@@ -22,7 +22,6 @@ object ImageToPosition {
   object Vec2 {
     def apply (str: String): Vec2 = {
       val split = str.split(",")
-      println(split)
       Vec2(split(0).toInt, split(1).toInt)
     }
   }
@@ -31,11 +30,21 @@ object ImageToPosition {
     Future {
       val cmd = scripts("colors.sh") #< file
       println(cmd)
+      println(cmd.run().exitValue())
+
+      """
       cmd.lineStream.map { str =>
-        println(str)
+        /*
         val split = str.split(" ")
         (Vec2(split(0)), split(1).toInt)
+        */
+       println(str)
       }.toList
+      """
+
+      println("OK")
+
+      List.empty
     }
   }
 
@@ -62,8 +71,12 @@ object ImageToPosition {
       clusters <- Future(kmeans(positions))
     } yield ()
 
+    Map.empty
+
+  /*
     // IMPLEMENT ME!
     val position = Game.initialPosition
     position
+    */
   }
 }

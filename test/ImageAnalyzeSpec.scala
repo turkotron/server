@@ -17,7 +17,7 @@ class ImageAnalyzeSpec extends Specification {
 
     "works with a mock image" in {
 
-      ImageToPosition.apply(new java.io.File("/Users/gre/Desktop/chess/server/test/IMG_20140627_104247.jpg"))
+      ImageToPosition(new java.io.File("/Users/gre/Desktop/chess/server/test/IMG_20140627_104247.jpg"))
       
     }
   }

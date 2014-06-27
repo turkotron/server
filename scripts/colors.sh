@@ -1,14 +1,16 @@
 
+cd `dirname $0`;
+
 blue="#00AEFF"
 pink="#FF007E"
 
-convert - +dither -colors 16 -remap colors.png text:- | 
-  grep '$blue|$pink' |
+convert - +dither -remap colors.png text:- | 
+  grep -E "$blue|$pink" |
   cut -f 1,4 -d' ' | 
   sed 's/://' |
-  while (read line) ; do # e.g.: 123,345 #00AEFF -> 123,345 1
-    pos=`cat $line | cut -f 1 -d' '`
-    color=`cat $line | cut -f 2 -d' '`
+  while read line; do # e.g.: 123,345 #00AEFF -> 123,345 1
+    pos=`echo $line | cut -f 1 -d' '`
+    color=`echo $line | cut -f 2 -d' '`
     id=0
     if [ "$blue" == "$color" ] ; then
       id=1;
@@ -16,7 +18,7 @@ convert - +dither -colors 16 -remap colors.png text:- |
     if [ "$pink" == "$color" ] ; then
       id=2;
     fi;
-    echo $pos $id;
+    echo "$pos $id";
   done;
 
 
