@@ -1,0 +1,1 @@
+convert - -posterize 3 text:- | cut -d" " -f4 | sort | uniq -c

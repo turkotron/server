@@ -13,6 +13,8 @@ final class Server(val upstream: String) extends Actor {
 
   import Server._
 
+  implicit val path = ImageToPosition.ScriptsPath(current.configuration.getString("scripts.dir").getOrElse("scripts"))
+
   private var currentGame = Setup("", "").toGame
 
   private val (enumerator, channel) = Concurrent.broadcast[String]
@@ -35,7 +37,9 @@ final class Server(val upstream: String) extends Actor {
     case ClockSwitch   => channel push "!"
 
     case Image(file) =>
-      val position = ImageToPosition(file)
+      import scala.concurrent._
+      import scala.concurrent.duration._
+      val position = Await.result(ImageToPosition(file), 10 seconds) // FIXME this is a future
       self ! AddPosition(position)
 
     case AddPosition(position) =>
