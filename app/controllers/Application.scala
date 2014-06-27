@@ -36,4 +36,15 @@ object Application extends Controller {
     println("clock!")
     Ok("ok")
   }
+
+  def uploadImage = Action(parse.multipartFormData) { req =>
+    req.body.file("image") foreach { image =>
+      import java.io.File
+      val filename = image.filename
+      val contentType = image.contentType
+      val file = new File(s"/tmp/$filename")
+      image.ref.moveTo(file)
+    }
+    Ok("ok")
+  }
 }

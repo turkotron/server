@@ -1,5 +1,5 @@
-POST     /create                           controllers.Application.create
+POST     /clock/create                    controllers.Application.create
+POST     /clock/switch                    controllers.Application.clockSwitch
 
-POST     /clock-switch                     controllers.Application.clockSwitch
-
-GET      /connect-snapper                  controllers.Application.connectSnapper
+GET      /snapper/connect                 controllers.Application.connectSnapper
+POST     /snapper/upload                  controllers.Application.uploadImage
