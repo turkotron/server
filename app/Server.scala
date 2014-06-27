@@ -39,7 +39,7 @@ final class Server(val upstream: String) extends Actor {
       self ! AddPosition(position)
 
     case AddPosition(position) =>
-      val move = PositionToMove(currentGame, position)
+      val move = PositionToMove(currentGame.position, position)
       WS.url(s"$upstream/api/import/live/${currentGame.id}/$move").post(Map("a" -> Seq("b")))
       currentGame = currentGame step position
   }
