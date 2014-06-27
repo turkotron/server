@@ -28,5 +28,10 @@ class PositionToMoveTest extends Specification {
       val pos2 = initial - "e2" + ("e4" -> true)
       PositionToMove(pos1, pos2) must_== Right("e2e4")
     }
+    "e2g7" in {
+      val pos1 = initial
+      val pos2 = initial - "e2" + ("g7" -> true)
+      PositionToMove(pos1, pos2) must_== Right("e2g7")
+    }
   }
 }
