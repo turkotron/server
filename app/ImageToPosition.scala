@@ -73,11 +73,6 @@ object ImageToPosition {
     before ++ after
   }
 
-<<<<<<< HEAD
-  def perspective (file: File, points: Seq[Vec2]): Future[(File, Int)] = ???
-
-  def pawnColor(file: File, dimension: Int, x: Int, y: Int): Option[Boolean] = ???
-=======
   def randomFile (): File = {
     new java.io.File("/tmp/turktron."+math.random+".png") // FIXME
   }
@@ -93,7 +88,6 @@ object ImageToPosition {
       None
     }
   }
->>>>>>> implement ImageToPosition.apply
 
   val Xs = "abcdefgh".toList.map(_.toString)
   val Ys = "87654321".toList.map(_.toString)
