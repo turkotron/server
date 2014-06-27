@@ -115,7 +115,7 @@ object ImageToPosition {
   // e.g. Map("a1" -> true, "a2" -> true, "g4" -> false, "g7" -> false)
   def apply(file: File)(implicit ec: ExecutionContext, scripts: ScriptsPath): Future[Map[String, Boolean]] = {
     val resized = randomFile()
-    (scripts("colors.sh") #< file) #> resized !
+    (scripts("resize.sh") #< file) #> resized !
     
     for {
       positions <- colors(resized)
