@@ -14,9 +14,9 @@ case class Game(
 
 object Game {
 
-  val initialPosition = (1 to 8).flatMap { rank =>
+  val initialPosition: Map[String, Boolean] = Seq(1, 2, 7, 8).flatMap { rank =>
     ('a' to 'h') map { file =>
-      s"$file$rank" -> (Set(1, 2, 7, 8) contains rank)
+      s"$file$rank" -> (rank < 3)
     }
   }.toMap
 }
