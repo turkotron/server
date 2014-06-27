@@ -73,12 +73,6 @@ object ImageToPosition {
     before ++ after
   }
 
-  def perspective (file: File, corners: Seq[Vec2])(implicit ec: ExecutionContext): Future[_] = {
-    Future {
-      ()
-    }
-  }
-
   def perspective (file: File, points: Seq[Vec2]): Future[(File, Int)] = ???
 
   def pawnColor(file: File, dimension: Int, x: Int, y: Int): Option[Boolean] = ???
