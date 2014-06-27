@@ -1,1 +1,1 @@
-convert - -posterize 3 text:- | cut -d" " -f4 | sort | uniq -c
+convert - -crop $1x$1+$2+$3 -posterize 3 text:- | cut -d" " -f4 | sort | uniq -c

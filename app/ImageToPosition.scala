@@ -66,7 +66,7 @@ object ImageToPosition {
         ccw(o1, o2, M)
       }
     }
-    
+
     val ordered = centers.sorted(ordering)
 
     val (after, before) = ordered.splitAt(ordered.indexOf(pinkCenter))
@@ -78,7 +78,11 @@ object ImageToPosition {
       ()
     }
   }
-  
+
+  def perspective (file: File, points: Seq[Vec2]): Future[(File, Int)] = ???
+
+  def pawnColor(file: File, dimension: Int, x: Int, y: Int): Option[Boolean] = ???
+
   def gridanalyze () {}
 
   // takes an image file
