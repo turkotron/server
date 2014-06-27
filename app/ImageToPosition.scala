@@ -43,7 +43,7 @@ object ImageToPosition {
 
   def colors (file: File)(implicit ec: ExecutionContext, scripts: ScriptsPath): Future[List[(Vec2, Int)]] = {
     Future {
-      val cmd = (scripts("resize.sh") #< file) #| scripts("colors.sh")
+      val cmd = scripts("colors.sh") #< file
       cmd.lineStream.map { str =>
         val split = str.split(" ")
         (parseVector(split(0)), split(1).toInt)
@@ -73,11 +73,46 @@ object ImageToPosition {
     before ++ after
   }
 
+<<<<<<< HEAD
   def perspective (file: File, points: Seq[Vec2]): Future[(File, Int)] = ???
 
   def pawnColor(file: File, dimension: Int, x: Int, y: Int): Option[Boolean] = ???
+=======
+  def randomFile (): File = {
+    new java.io.File("/tmp/turktron."+math.random+".png") // FIXME
+  }
 
-  def gridanalyze () {}
+  def perspective (file: File, points: Seq[Vec2])(implicit ec: ExecutionContext): Future[(File, Int)] = {
+    Future {
+      (file, 200)
+    }
+  }
+
+  def pawnColor(file: File, dimension: Int, x: Int, y: Int)(implicit ec: ExecutionContext, scripts: ScriptsPath): Future[Option[Boolean]] = {
+    Future {
+      None
+    }
+  }
+>>>>>>> implement ImageToPosition.apply
+
+  val Xs = "abcdefgh".toList.map(_.toString)
+  val Ys = "87654321".toList.map(_.toString)
+  def allPawns(gridFile: File, dimension: Int)(implicit ec: ExecutionContext, scripts: ScriptsPath)
+    : Future[List[(String, Option[Boolean])]] = {
+    Future.sequence(
+      (
+        for {
+          x <- 0 until 8
+          y <- 0 until 8
+        } yield {
+          val pos: String = Xs(x)+Ys(y)
+          pawnColor(gridFile, dimension, x * dimension / 8, y * dimension / 8).map { result =>
+            (pos, result)
+          }
+        }
+      ).toList
+    )
+  }
 
   // takes an image file
   // returns a map of square -> piece color
@@ -85,17 +120,17 @@ object ImageToPosition {
   // false = black piece
   // e.g. Map("a1" -> true, "a2" -> true, "g4" -> false, "g7" -> false)
   def apply(file: File)(implicit ec: ExecutionContext, scripts: ScriptsPath): Future[Map[String, Boolean]] = {
-    val future = for {
-      positions <- colors(file)
+    val resized = randomFile()
+    (scripts("colors.sh") #< file) #> resized !
+    
+    for {
+      positions <- colors(resized)
       corners <- Future(kmeans(positions))
-      _ <- perspective(file, corners)
-    } yield Map.empty[String, Boolean]
-
-    future
-  /*
-    // IMPLEMENT ME!
-    val position = Game.initialPosition
-    position
-    */
+      (gridFile, size) <- perspective(resized, corners)
+      results <- allPawns(gridFile, size)
+    }
+    yield results.flatMap { case (pos, valueOpt) =>
+      valueOpt.map { value => (pos, value) }
+    }.toMap
   }
 }
