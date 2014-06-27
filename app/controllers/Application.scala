@@ -21,7 +21,7 @@ object Application extends Controller {
   def create = Action.async {
     server ? Server.NewGame mapTo manifest[Game] map { game =>
       println("create " + game.url)
-      Ok(game.url)
+      Ok(game.url).withHeaders("access-control-allow-origin" -> "*")
     }
   }
 
@@ -34,7 +34,7 @@ object Application extends Controller {
   def clockSwitch = Action {
     server ! Server.ClockSwitch
     println("clock!")
-    Ok("ok")
+    Ok("ok").withHeaders("access-control-allow-origin" -> "*")
   }
 
   def uploadImage = Action(parse.multipartFormData) { req =>
