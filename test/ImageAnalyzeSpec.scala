@@ -20,9 +20,10 @@ class ImageAnalyzeSpec extends Specification {
 
     "works with a mock image" in {
 
-      Await.result(ImageToPosition(new java.io.File("/Users/gre/Desktop/chess/server/test/IMG_20140627_104247.jpg")), DurationInt(10).seconds)
-      
-      true
+      val expected = Map.empty[String, Boolean]
+      val result = Await.result(ImageToPosition(new java.io.File("/Users/gre/Desktop/chess/server/test/IMG_20140627_104247.jpg")), DurationInt(20).seconds)
+
+      result == expected
     }
   }
 }
