@@ -51,15 +51,32 @@ object ImageToPosition {
     }
   }
 
-  def kmeans (list: List[(Vec2, Int)], k: Int = 4): List[(Int, (Vec2, Int))] = {
-    val blueClusters = KMeans.cluster(list.filter(_._2==1).map(_._1), 3)
-    val pinkClusters = KMeans.cluster(list.filter(_._2==2).map(_._1), 2)
-    println(blueClusters)
-    List.empty
+  def kmeans (list: List[(Vec2, Int)], k: Int = 4): Seq[Vec2] = {
+    val blueCenters = KMeans.cluster(list.filter(_._2==1).map(_._1), 3).map(Vec2Space.centroid)
+    val pinkCenter = Vec2Space.centroid(KMeans.cluster(list.filter(_._2==2).map(_._1), 2).sortBy(_.size).last)
+    val centers = blueCenters :+ pinkCenter
+    val center = Vec2Space.centroid(centers)
+
+    def ccw(p1:Vec2, p2:Vec2, p3:Vec2) =
+      (p2(0) - p1(0))*(p3(1) - p1(1)) - (p2(1) - p1(1))*(p3(0) - p1(0))
+
+    val M = center
+    val ordering = new Ordering[Vec2] {
+      def compare (o1: Vec2, o2: Vec2) = {
+        ccw(o1, o2, M)
+      }
+    }
+    
+    val ordered = centers.sorted(ordering)
+
+    val (after, before) = ordered.splitAt(ordered.indexOf(pinkCenter))
+    before ++ after
   }
 
-  def perspective (topleft: Vec2, topright: Vec2, bottomright: Vec2, bottomleft: Vec2) {
-
+  def perspective (file: File, corners: Seq[Vec2])(implicit ec: ExecutionContext): Future[_] = {
+    Future {
+      ()
+    }
   }
   
   def gridanalyze () {}
@@ -72,7 +89,8 @@ object ImageToPosition {
   def apply(file: File)(implicit ec: ExecutionContext, scripts: ScriptsPath): Future[Map[String, Boolean]] = {
     val future = for {
       positions <- colors(file)
-      clusters <- Future(kmeans(positions))
+      corners <- Future(kmeans(positions))
+      _ <- perspective(file, corners)
     } yield Map.empty[String, Boolean]
 
     future
