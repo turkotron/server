@@ -4,7 +4,7 @@ cd `dirname $0`;
 blue="#00AEFF"
 pink="#FF007E"
 
-convert - +dither -remap colors.png text:- | 
+convert - -remap colors.png text:- | 
   grep -E "$blue|$pink" |
   cut -f 1,4 -d' ' | 
   sed 's/://' |
