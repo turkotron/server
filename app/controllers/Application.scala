@@ -38,11 +38,14 @@ object Application extends Controller {
   }
 
   def uploadImage = Action(parse.multipartFormData) { req =>
+    println(req)
+    println(req.headers.toMap)
     req.body.file("image") foreach { image =>
       import java.io.File
       val filename = image.filename
       val contentType = image.contentType
       val file = new File(s"/tmp/$filename")
+      println(file.getAbsolutePath)
       image.ref.moveTo(file)
       server ! Server.Image(file)
     }
