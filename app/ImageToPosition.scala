@@ -48,7 +48,7 @@ object ImageToPosition {
       resized
     }
   }
-    
+
 
   def colors (file: File)(implicit ec: ExecutionContext, scripts: ScriptsPath): Future[List[(Vec2, Int)]] = {
     Future {
@@ -86,17 +86,72 @@ object ImageToPosition {
     new java.io.File("/tmp/turktron."+math.random+".png") // FIXME
   }
 
-  def perspective (file: File, points: Seq[Vec2])(implicit ec: ExecutionContext): Future[(File, Int)] = {
-    Future {
-      (file, 200)
+  def perspective (file: File, points: Seq[Vec2])(implicit ec: ExecutionContext, scripts: ScriptsPath): (File, Int) = {
+    points match {
+      case Seq(tl, bl, br, tr) => {
+
+        val width = math.min(
+          math.min(
+            Math.abs(tl(0) - tr(0)),
+            Math.abs(bl(0) - br(0))
+          ),
+          math.min(
+            Math.abs(tl(1) - bl(1)),
+            Math.abs(tr(1) - br(1))
+          )
+        )
+
+        println("Perspective width : " + width.toString)
+
+        val output = randomFile
+
+        println( output.getAbsolutePath )
+
+        Seq(
+          scripts("correct.sh"),
+          vectorToString(tl),
+          vectorToString(bl),
+          vectorToString(br),
+          vectorToString(tr),
+          width.toString
+         ) #< file #> output !
+
+        (output, width / 3)
+      }
+      case _ => throw new IllegalArgumentException("Invalid point count")
     }
   }
 
-  def pawnColor(file: File, dimension: Int, x: Int, y: Int)(implicit ec: ExecutionContext, scripts: ScriptsPath): Future[Option[Boolean]] = {
-    Future {
-      None
-    }
+  def perspectiveF(file: File, points: Seq[Vec2])(implicit ec: ExecutionContext, scripts: ScriptsPath): Future[(File, Int)] =
+    Future(perspective(file, points))
+
+  def pawnColor(file: File, width: Int, x: Int, y: Int)(implicit ec: ExecutionContext, scripts: ScriptsPath): Option[Boolean] = {
+      val cM = (
+        Seq(
+          scripts("pawn.sh"),
+          width.toString,
+          ( x * width ).toString,
+          ( y * width ).toString
+        )  #< file
+      ).lineStream.map { str =>
+        if( str.contains("#") ){
+          val split = str.trim.split(" ")
+          Some( (split(1), split(0).toInt) )
+        } else None
+      }.flatten.toMap[String, Int]
+
+      println(cM.toString)
+
+      ( cM.get("#7F7F7F"), cM.get("#7F7F00"), cM.get("#000000") ) match {
+        case ( Some(back), Some(wh), _ ) if  100 * wh / back > 10 => Some(true)
+        case ( Some(back), None, Some(bl) ) if 100 * bl / back > 5 => Some(false)
+        case ( Some(_), _, _) if cM.size == 1 => None
+        case _ => Some(false)
+      }
   }
+
+  def pawnColorF(file: File, width: Int, x: Int, y: Int)(implicit ec: ExecutionContext, scripts: ScriptsPath): Future[Option[Boolean]] =
+    Future(pawnColor(file, width, x, y))
 
   val Xs = "abcdefgh".toList.map(_.toString)
   val Ys = "87654321".toList.map(_.toString)
@@ -109,7 +164,7 @@ object ImageToPosition {
           y <- 0 until 8
         } yield {
           val pos: String = Xs(x)+Ys(y)
-          pawnColor(gridFile, dimension, x * dimension / 8, y * dimension / 8).map { result =>
+          pawnColorF(gridFile, dimension, x * dimension / 8, y * dimension / 8).map { result =>
             (pos, result)
           }
         }
@@ -128,7 +183,7 @@ object ImageToPosition {
       positions <- colors(resized)
       corners <- Future(kmeans(positions))
       _ = println(s"Corners: $corners")
-      (gridFile, size) <- perspective(resized, corners)
+      (gridFile, size) <- perspectiveF(resized, corners)
       results <- allPawns(gridFile, size)
     }
     yield results.flatMap { case (pos, valueOpt) =>
