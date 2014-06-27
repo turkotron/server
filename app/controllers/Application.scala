@@ -8,15 +8,15 @@ import play.api.mvc._
 import play.api.Play.current
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
-import turkotron.{ Server, Game }
+import turkotron.{ Server, Game, ImageToPosition }
 
 object Application extends Controller {
 
   private implicit val timeout = akka.util.Timeout(1.second)
-
-  private val server = Server.make(
+  private val upstreamUrl =
     Play.configuration.getString("upstream.url") getOrElse "http://en.lichess.org"
-  )
+
+  private val server = Server.make(upstreamUrl)
 
   def create = Action.async {
     server ? Server.NewGame mapTo manifest[Game] map { game =>
@@ -44,6 +44,7 @@ object Application extends Controller {
       val contentType = image.contentType
       val file = new File(s"/tmp/$filename")
       image.ref.moveTo(file)
+      server ! Server.Image(file)
     }
     Ok("ok")
   }

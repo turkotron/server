@@ -13,7 +13,7 @@ final class Server(val upstream: String) extends Actor {
 
   import Server._
 
-  private var currentGame = Game("", "", 0, false)
+  private var currentGame = Setup("", "").toGame
 
   private val (enumerator, channel) = Concurrent.broadcast[String]
 
@@ -28,11 +28,20 @@ final class Server(val upstream: String) extends Actor {
         mrSender ! game
       }
 
-    case SetGame(game)  => currentGame = game
+    case SetGame(game) => currentGame = game
 
     case ConnectSnaper => sender ! enumerator
 
-    case ClockSwitch => channel push "!"
+    case ClockSwitch   => channel push "!"
+
+    case Image(file) =>
+      val position = ImageToPosition(file)
+      self ! AddPosition(position)
+
+    case AddPosition(position) =>
+      val move = PositionToMove(currentGame, position)
+      WS.url(s"$upstream/api/import/live/${currentGame.id}/$move").post(Map("a" -> Seq("b")))
+      currentGame = currentGame step position
   }
 }
 
@@ -44,6 +53,9 @@ object Server {
   case object ConnectSnaper
 
   case object ClockSwitch
+
+  case class Image(file: java.io.File)
+  case class AddPosition(position: Map[String, Boolean])
 
   def make(upstream: String) =
     play.api.libs.concurrent.Akka.system.actorOf(Props(classOf[Server], upstream))
